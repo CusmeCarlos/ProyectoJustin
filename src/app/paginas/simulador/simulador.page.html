@@ -1,0 +1,94 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Simulador por Universidad</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <!-- Seleccionar universidad -->
+  <ion-item>
+    <ion-label>Universidad</ion-label>
+    <ion-select [(ngModel)]="universidad">
+      <ion-select-option *ngFor="let u of universidades" [value]="u">
+        {{ u.nombre }} 
+      </ion-select-option>
+    </ion-select>
+  </ion-item>
+
+  <!-- Botón para comenzar simulador -->
+  <ion-button expand="block" color="primary" (click)="comenzar()" [disabled]="!universidad || enCurso">
+    Comenzar simulador
+  </ion-button>
+
+  <!-- Temporizador en tiempo real -->
+  <div *ngIf="enCurso" style="margin: 10px 0; font-weight: bold;">
+    Tiempo: {{ tiempoFormateado }}
+  </div>
+
+  <!-- Mostrar preguntas -->
+  <div *ngIf="preguntas.length > 0 && enCurso">
+    <h2>Preguntas</h2>
+
+    <ion-card *ngFor="let p of preguntas">
+      <ion-card-header>
+        <ion-card-title>{{ p.texto }}</ion-card-title>
+        <small>Tipo de prueba: {{ p.area }}</small>
+      </ion-card-header>
+
+      <ion-card-content>
+        <ion-radio-group [(ngModel)]="respuestas[p.id]">
+          <ion-item>
+            <ion-label>Sí</ion-label>
+            <ion-radio slot="start" value="si"></ion-radio>
+          </ion-item>
+          <ion-item>
+            <ion-label>No</ion-label>
+            <ion-radio slot="start" value="no"></ion-radio>
+          </ion-item>
+        </ion-radio-group>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-button expand="block" color="success" (click)="enviar()">
+      Enviar simulador
+    </ion-button>
+  </div>
+
+  <!-- RESULTADO -->
+  <ion-card *ngIf="terminado">
+    <ion-card-header>
+      <ion-card-title>Resultado</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content>
+      <p><strong>Correctas:</strong> {{ correctas }}</p>
+      <p><strong>Incorrectas:</strong> {{ incorrectas }}</p>
+      <p><strong>Puntaje:</strong> {{ correctas }} / {{ preguntas.length }}</p>
+      <p><strong>Tiempo total:</strong> {{ tiempoFormateado }}</p>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- HISTORIAL -->
+  <ion-card *ngIf="historial.length > 0">
+    <ion-card-header>
+      <ion-card-title>Historial de Intentos</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content>
+      <ion-list>
+        <ion-item *ngFor="let h of historial">
+          <ion-label>
+            <p><strong>{{ h.fecha }}</strong></p>
+            <p>Correctas: {{ h.correctas }} / {{ h.total }}</p>
+            <p>Tiempo: {{ h.tiempo }}</p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+
+</ion-content>

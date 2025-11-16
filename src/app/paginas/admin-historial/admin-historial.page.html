@@ -1,0 +1,32 @@
+<ion-header>
+  <ion-toolbar color="tertiary">
+    <ion-title>Historial Simulador</ion-title>
+     <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin-panel"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <ion-item>
+    <ion-label>Universidad</ion-label>
+    <ion-select [(ngModel)]="uniId" (ionChange)="cargar()">
+      <ion-select-option *ngFor="let u of universidades" [value]="u.id">
+        {{ u.nombre }}
+      </ion-select-option>
+    </ion-select>
+  </ion-item>
+
+  <ion-list>
+    <ion-item *ngFor="let h of historial">
+      <ion-label>
+        <h2>Intento del {{ h.fecha }}</h2>
+        <p>Correctas: {{ h.correctas }}</p>
+        <p>Incorrectas: {{ h.incorrectas }}</p>
+        <p>Puntaje: {{ h.puntaje }}</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+</ion-content>

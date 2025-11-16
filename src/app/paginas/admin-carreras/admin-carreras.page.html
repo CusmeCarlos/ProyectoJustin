@@ -1,0 +1,106 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Administrar Carreras</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin-panel"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <!-- Selección de Universidad -->
+  <ion-item>
+    <ion-label>Universidad</ion-label>
+    <ion-select [(ngModel)]="uniId" (ionChange)="cargar()">
+      <ion-select-option *ngFor="let u of universidades" [value]="u.id">
+        {{ u.nombre }}
+      </ion-select-option>
+    </ion-select>
+  </ion-item>
+
+  <!-- BOTÓN NUEVA CARRERA -->
+  <ion-button expand="block" color="success" (click)="abrirModalCrear()">
+    ➕ Nueva Carrera
+  </ion-button>
+
+  <!-- LISTA -->
+  <ion-list>
+    <ion-item *ngFor="let c of carreras">
+      <ion-label>
+        <h2>{{ c.nombre }}</h2>
+        <p>{{ c.modalidad }} - {{ c.matriz }}</p>
+      </ion-label>
+
+      <ion-button fill="clear" color="warning" (click)="abrirModalEditar(c)">
+        ✏️
+      </ion-button>
+
+      <ion-button fill="clear" color="danger" (click)="eliminar(c.id)">
+        🗑️
+      </ion-button>
+    </ion-item>
+  </ion-list>
+
+  <!-- ======================== -->
+  <!--          MODAL          -->
+  <!-- ======================== -->
+  <ion-modal [isOpen]="modalAbierto" (didDismiss)="cerrarModal()">
+    <ng-template>
+
+      <ion-header>
+        <ion-toolbar color="primary">
+          <ion-title>
+            {{ editando ? 'Editar Carrera' : 'Nueva Carrera' }}
+          </ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="cerrarModal()">Cerrar</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content class="ion-padding">
+
+        <ion-item>
+          <ion-label position="floating">Nombre</ion-label>
+          <ion-input [(ngModel)]="nuevaCarrera.nombre"></ion-input>
+        </ion-item>
+
+        <!-- SELECT FIJO PARA MODALIDAD -->
+        <ion-item>
+          <ion-label>Modalidad</ion-label>
+          <ion-select [(ngModel)]="nuevaCarrera.modalidad">
+            <ion-select-option value="Presencial">Presencial</ion-select-option>
+            <ion-select-option value="Virtual">Virtual</ion-select-option>
+            <ion-select-option value="Semipresencial">Semipresencial</ion-select-option>
+            <ion-select-option value="A distancia">A distancia</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-item>
+          <ion-label position="floating">Matriz</ion-label>
+          <ion-input [(ngModel)]="nuevaCarrera.matriz"></ion-input>
+        </ion-item>
+
+        <!-- BOTONES -->
+        <ion-button expand="block" color="success" *ngIf="!editando"
+          (click)="agregar()">
+          Guardar Carrera
+        </ion-button>
+
+        <ion-button expand="block" color="warning" *ngIf="editando"
+          (click)="guardarEdicion()">
+          Guardar Cambios
+        </ion-button>
+
+        <ion-button expand="block" fill="outline" color="medium"
+          (click)="cerrarModal()">
+          Cancelar
+        </ion-button>
+
+      </ion-content>
+
+    </ng-template>
+  </ion-modal>
+
+</ion-content>

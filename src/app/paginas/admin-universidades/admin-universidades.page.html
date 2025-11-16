@@ -1,0 +1,128 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin-panel"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Administrar Universidades</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <ion-button expand="block" color="success" (click)="editando=false; abrirModal()">
+    Nueva Universidad
+  </ion-button>
+
+  <!-- LISTA DE UNIVERSIDADES -->
+  <ion-card *ngFor="let u of universidades" class="list-card">
+    <ion-card-header>
+      <ion-card-title>{{ u.nombre }}</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content>
+
+      <p><strong>Examen:</strong> {{ u.porcExamen }}%</p>
+      <p><strong>Grado:</strong> {{ u.porcGrado }}%</p>
+      <p><strong>Modalidad:</strong> {{ u.modalidad || 'No definida' }}</p>
+      <p><strong>Áreas:</strong> {{ u.Tipodeprueba.join(', ') || 'Ninguna' }}</p>
+
+      <div style="display:flex; gap:10px; margin-top:10px;">
+        <ion-button size="small" color="warning"
+          (click)="editar(u); abrirModal()">
+          Editar
+        </ion-button>
+
+        <ion-button size="small" color="danger" (click)="eliminar(u.id)">
+          Eliminar
+        </ion-button>
+      </div>
+
+    </ion-card-content>
+  </ion-card>
+
+
+  <!-- ================================================= -->
+  <!--                     MODAL                         -->
+  <!-- ================================================= -->
+  <ion-modal [isOpen]="modalAbierto" (didDismiss)="cerrarModal()">
+    <ng-template>
+
+      <ion-header>
+        <ion-toolbar color="primary">
+          <ion-title>{{ editando ? 'Editar Universidad' : 'Nueva Universidad' }}</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="cerrarModal()">Cerrar</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content class="ion-padding">
+
+        <!-- Nombre -->
+        <ion-item>
+          <ion-label position="floating">Nombre</ion-label>
+          <ion-input [(ngModel)]="nuevaUni.nombre"></ion-input>
+        </ion-item>
+
+        <!-- % Examen -->
+        <ion-item>
+          <ion-label position="floating">% Examen</ion-label>
+          <ion-input type="number" [(ngModel)]="nuevaUni.porcExamen"></ion-input>
+        </ion-item>
+
+        <!-- % Grado -->
+        <ion-item>
+          <ion-label position="floating">% Grado</ion-label>
+          <ion-input type="number" [(ngModel)]="nuevaUni.porcGrado"></ion-input>
+        </ion-item>
+
+        <!-- Modalidad con RADIO BUTTONS -->
+        <h3 style="margin-top:15px;"><strong>Modalidad</strong></h3>
+
+        <ion-radio-group [(ngModel)]="nuevaUni.modalidad">
+
+          <ion-item>
+            <ion-label>Presencial</ion-label>
+            <ion-radio value="Presencial" slot="end"></ion-radio>
+          </ion-item>
+
+          <ion-item>
+            <ion-label>Virtual</ion-label>
+            <ion-radio value="Virtual" slot="end"></ion-radio>
+          </ion-item>
+
+        </ion-radio-group>
+
+        <!-- Áreas del examen -->
+        <h3 style="margin-top:20px;">Áreas del examen</h3>
+
+        <ion-list>
+          <ion-item *ngFor="let area of areasDisponibles">
+            <ion-checkbox
+              slot="start"
+              [checked]="nuevaUni.Tipodeprueba.includes(area)"
+              (ionChange)="toggleArea(area, $event.detail.checked)">
+            </ion-checkbox>
+            <ion-label>{{ area | titlecase }}</ion-label>
+          </ion-item>
+        </ion-list>
+
+        <!-- Botones -->
+        <ion-button expand="block" color="success" *ngIf="!editando" (click)="agregar()">
+          Guardar Universidad
+        </ion-button>
+
+        <ion-button expand="block" color="warning" *ngIf="editando" (click)="guardarEdicion()">
+          Guardar Cambios
+        </ion-button>
+
+        <ion-button expand="block" fill="outline" color="medium" (click)="cerrarModal()">
+          Cancelar
+        </ion-button>
+
+      </ion-content>
+
+    </ng-template>
+  </ion-modal>
+
+</ion-content>

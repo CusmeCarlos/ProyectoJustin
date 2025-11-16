@@ -1,0 +1,29 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Crear Cuenta</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <ion-item>
+    <ion-input placeholder="Nombre" [(ngModel)]="nombre"></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-input placeholder="Correo" [(ngModel)]="email"></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-input placeholder="Contraseña" type="password" [(ngModel)]="password"></ion-input>
+  </ion-item>
+
+  <ion-button expand="block" color="success" (click)="registrar()">
+    Crear Cuenta
+  </ion-button>
+
+  <ion-button fill="clear" expand="block" routerLink="/login">
+    Ya tengo una cuenta → Iniciar sesión
+  </ion-button>
+
+</ion-content>

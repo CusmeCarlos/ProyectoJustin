@@ -1,0 +1,43 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Universidades</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div style="max-width: 850px; margin: 0 auto;">
+
+    <ion-card *ngFor="let u of universidades" class="ion-margin-bottom">
+      <ion-card-header>
+        <ion-card-title style="font-size: 1.4rem; font-weight: bold;">
+          {{ u.nombre }}
+        </ion-card-title>
+      </ion-card-header>
+
+      <ion-card-content style="font-size: 1.1rem;">
+
+        <p><strong>% Examen:</strong> {{ u.porcExamen }}%</p>
+        <p><strong>% Grado:</strong> {{ u.porcGrado }}%</p>
+
+        <p>
+          <strong>Tipo de prueba:</strong>
+          <span *ngIf="u.areas.length > 0; else noAreas">
+            {{ u.areas.join(', ') }}
+          </span>
+        </p>
+
+        <ng-template #noAreas>
+          <span style="color: gray;">Sin áreas registradas</span>
+        </ng-template>
+
+        <!-- ⭐ MODALIDAD AGREGADA AQUÍ -->
+        <p><strong>Modalidad:</strong> {{ u.modalidad }}</p>
+
+      </ion-card-content>
+    </ion-card>
+
+  </div>
+</ion-content>

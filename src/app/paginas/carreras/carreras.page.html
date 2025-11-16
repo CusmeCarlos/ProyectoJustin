@@ -1,0 +1,59 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Carreras</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div style="max-width:800px;margin:0 auto;">
+
+    <!-- Filtro por universidad -->
+    <ion-item>
+      <ion-label>Filtrar por universidad</ion-label>
+      <ion-select [(ngModel)]="filtroUniversidad" placeholder="Todas">
+        <ion-select-option [value]="null">Todas</ion-select-option>
+        <ion-select-option *ngFor="let uni of universidadesMap | keyvalue" [value]="uni.key">
+          {{ uni.value }}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <!-- Filtro por carrera -->
+    <ion-item>
+      <ion-label>Filtrar por carrera</ion-label>
+      <ion-select [(ngModel)]="filtroCarrera" placeholder="Todas">
+        <ion-select-option value="">Todas</ion-select-option>
+        <ion-select-option *ngFor="let nombre of listaCarreras" [value]="nombre">
+          {{ nombre }}
+        </ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <!-- Filtro por modalidad -->
+    <ion-item>
+      <ion-label>Filtrar por modalidad</ion-label>
+      <ion-select [(ngModel)]="filtroModalidad" placeholder="Todas">
+        <ion-select-option value="">Todas</ion-select-option>
+        <ion-select-option value="Presencial">Presencial</ion-select-option>
+        <ion-select-option value="Virtual">Virtual</ion-select-option>
+        <ion-select-option value="Semipresencial">Semipresencial</ion-select-option>
+        <ion-select-option value="A distancia">A distancia</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <!-- Lista de carreras filtradas -->
+    <ion-list>
+      <ion-item *ngFor="let c of carrerasFiltradas">
+        <ion-label>
+          <h2>{{ c.nombre }}</h2>
+          <p>{{ c.modalidad }} - {{ c.matriz }}</p>
+          <p><small>{{ nombreUni(c.uniId) }}</small></p> <!-- solo el nombre de la universidad -->
+        </ion-label>
+      </ion-item>
+    </ion-list>
+
+  </div>
+</ion-content>

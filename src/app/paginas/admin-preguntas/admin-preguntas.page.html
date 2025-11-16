@@ -1,0 +1,108 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Administrar Preguntas</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin-panel"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <!-- Seleccionar Universidad -->
+  <ion-item>
+    <ion-label>Universidad</ion-label>
+    <ion-select [(ngModel)]="uniId" (ionChange)="cargar()">
+      <ion-select-option *ngFor="let u of universidades" [value]="u.id">
+        {{ u.nombre }}
+      </ion-select-option>
+    </ion-select>
+  </ion-item>
+
+  <!-- Botón Crear -->
+  <ion-button expand="full" color="success" (click)="abrirModalCrear()">
+    ➕ Agregar Pregunta
+  </ion-button>
+
+  <!-- MODAL -->
+  <ion-modal [isOpen]="modalAbierto" (willDismiss)="cerrarModal()">
+    <ng-template>
+
+      <ion-header>
+        <ion-toolbar color="primary">
+          <ion-title>{{ editando ? 'Editar Pregunta' : 'Nueva Pregunta' }}</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="cerrarModal()">Cerrar</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content class="ion-padding">
+
+        <ion-item>
+          <ion-label position="stacked">Texto</ion-label>
+          <ion-input [(ngModel)]="nuevaPregunta.texto"></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Área</ion-label>
+          <ion-select [(ngModel)]="nuevaPregunta.area">
+            <ion-select-option *ngFor="let a of areas" [value]="a">{{ a }}</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <h3 style="margin-left: 10px;">Opciones</h3>
+
+        <ion-list>
+          <ion-item *ngFor="let op of nuevaPregunta.opciones; let i = index">
+            <ion-input placeholder="Opción {{i+1}}" [(ngModel)]="nuevaPregunta.opciones[i]"></ion-input>
+
+            <ion-radio slot="end" [value]="i" [(ngModel)]="nuevaPregunta.correcta"></ion-radio>
+          </ion-item>
+        </ion-list>
+
+        <!-- Botones Crear/Editar -->
+        <ion-button expand="full" color="primary" (click)="guardarPregunta()" *ngIf="!editando">
+          Guardar
+        </ion-button>
+
+        <ion-button expand="full" color="warning" (click)="guardarEdicion()" *ngIf="editando">
+          Guardar Cambios
+        </ion-button>
+
+        <ion-button expand="full" color="medium" (click)="cerrarModal()">
+          Cancelar
+        </ion-button>
+
+      </ion-content>
+
+    </ng-template>
+  </ion-modal>
+
+
+  <!-- IMPORTAR EXCEL -->
+  <ion-item>
+    <ion-label>Importar Excel</ion-label>
+    <input type="file" (change)="importarExcel($event)">
+  </ion-item>
+
+  <!-- LISTADO -->
+  <ion-list>
+    <ion-item *ngFor="let p of preguntas">
+      <ion-label>
+        <h2>{{ p.texto }}</h2>
+        <p>Área: {{ p.area }}</p>
+        <p>Correcta: {{ p.opciones[p.correcta] }}</p>
+      </ion-label>
+
+      <ion-button fill="clear" color="warning" (click)="abrirModalEditar(p)">
+        ✏️ Editar
+      </ion-button>
+
+      <ion-button fill="clear" color="danger" (click)="eliminar(p.id)">
+        🗑️
+      </ion-button>
+    </ion-item>
+  </ion-list>
+
+</ion-content>

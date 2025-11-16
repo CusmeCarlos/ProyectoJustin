@@ -1,0 +1,42 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Cálculo de Porcentaje</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <ion-item>
+    <ion-label>Universidad</ion-label>
+    <ion-select [(ngModel)]="universidadSeleccionada">
+      <ion-select-option *ngFor="let u of universidades" [value]="u">
+        {{ u.nombre }} ({{ u.porcExamen }}% examen / {{ u.porcGrado }}% grado)
+      </ion-select-option>
+    </ion-select>
+  </ion-item>
+
+  <ion-item>
+    <ion-label position="floating">Nota de examen (0 - 1000)</ion-label>
+    <ion-input type="number" [(ngModel)]="notaExamen"></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label position="floating">Nota de grado (0 - 10)</ion-label>
+    <ion-input type="number" [(ngModel)]="notaGrado"></ion-input>
+  </ion-item>
+
+  <ion-button expand="block" (click)="calcular()">Calcular</ion-button>
+
+  <ion-card *ngIf="puntajeFinal !== null">
+    <ion-card-header>
+      <ion-card-title>Puntaje Final</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <h2>{{ puntajeFinal }} / 1000</h2>
+    </ion-card-content>
+  </ion-card>
+
+</ion-content>
