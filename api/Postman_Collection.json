@@ -1,0 +1,481 @@
+{
+  "info": {
+    "name": "Proyecto Justin API",
+    "_postman_id": "proyecto-justin-api",
+    "description": "Colección de endpoints para la API REST de Proyecto Justin",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Autenticación",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@admin.com\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/login.php",
+              "host": ["{{base_url}}"],
+              "path": ["login.php"]
+            },
+            "description": "Endpoint para autenticación de usuarios"
+          }
+        },
+        {
+          "name": "Registro",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Juan Pérez\",\n  \"email\": \"juan@example.com\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/register.php",
+              "host": ["{{base_url}}"],
+              "path": ["register.php"]
+            },
+            "description": "Endpoint para registro de nuevos usuarios"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Universidades",
+      "item": [
+        {
+          "name": "Listar Universidades",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/universidades.php",
+              "host": ["{{base_url}}"],
+              "path": ["universidades.php"]
+            },
+            "description": "Obtiene todas las universidades"
+          }
+        },
+        {
+          "name": "Obtener Universidad",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/universidades.php?id=1",
+              "host": ["{{base_url}}"],
+              "path": ["universidades.php"],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Obtiene una universidad específica por ID"
+          }
+        },
+        {
+          "name": "Crear Universidad",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Universidad Técnica de Manabí\",\n  \"porc_examen\": 60,\n  \"porc_grado\": 40,\n  \"modalidad\": \"Presencial\",\n  \"Tipodeprueba\": [\"razonamiento\", \"conocimientos\", \"generales\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/universidades.php",
+              "host": ["{{base_url}}"],
+              "path": ["universidades.php"]
+            },
+            "description": "Crea una nueva universidad"
+          }
+        },
+        {
+          "name": "Actualizar Universidad",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Universidad de Guayaquil - Actualizada\",\n  \"porc_examen\": 65,\n  \"porc_grado\": 35\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/universidades.php?id=1",
+              "host": ["{{base_url}}"],
+              "path": ["universidades.php"],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Actualiza una universidad existente"
+          }
+        },
+        {
+          "name": "Eliminar Universidad",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/universidades.php?id=5",
+              "host": ["{{base_url}}"],
+              "path": ["universidades.php"],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "5"
+                }
+              ]
+            },
+            "description": "Elimina una universidad (cambiar ID según necesidad)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Carreras",
+      "item": [
+        {
+          "name": "Listar Carreras",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/carreras.php",
+              "host": ["{{base_url}}"],
+              "path": ["carreras.php"]
+            },
+            "description": "Obtiene todas las carreras"
+          }
+        },
+        {
+          "name": "Filtrar Carreras por Universidad",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/carreras.php?universidad_id=1",
+              "host": ["{{base_url}}"],
+              "path": ["carreras.php"],
+              "query": [
+                {
+                  "key": "universidad_id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Filtra carreras por ID de universidad"
+          }
+        },
+        {
+          "name": "Crear Carrera",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Ingeniería en Software\",\n  \"universidad_id\": 1,\n  \"modalidad\": \"Presencial\",\n  \"matriz\": \"Matriz Central\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/carreras.php",
+              "host": ["{{base_url}}"],
+              "path": ["carreras.php"]
+            },
+            "description": "Crea una nueva carrera"
+          }
+        },
+        {
+          "name": "Actualizar Carrera",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Ingeniería en Sistemas Computacionales\",\n  \"modalidad\": \"Híbrida\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/carreras.php?id=1",
+              "host": ["{{base_url}}"],
+              "path": ["carreras.php"],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Actualiza una carrera existente"
+          }
+        },
+        {
+          "name": "Eliminar Carrera",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/carreras.php?id=6",
+              "host": ["{{base_url}}"],
+              "path": ["carreras.php"],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "6"
+                }
+              ]
+            },
+            "description": "Elimina una carrera"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Preguntas",
+      "item": [
+        {
+          "name": "Listar Preguntas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/preguntas.php",
+              "host": ["{{base_url}}"],
+              "path": ["preguntas.php"]
+            },
+            "description": "Obtiene todas las preguntas"
+          }
+        },
+        {
+          "name": "Filtrar Preguntas por Área",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/preguntas.php?area=razonamiento",
+              "host": ["{{base_url}}"],
+              "path": ["preguntas.php"],
+              "query": [
+                {
+                  "key": "area",
+                  "value": "razonamiento"
+                }
+              ]
+            },
+            "description": "Filtra preguntas por área (razonamiento, conocimientos, generales)"
+          }
+        },
+        {
+          "name": "Crear Pregunta",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"texto\": \"¿Cuál es la raíz cuadrada de 144?\",\n  \"opciones\": [\"10\", \"11\", \"12\", \"13\"],\n  \"correcta\": 2,\n  \"area\": \"razonamiento\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/preguntas.php",
+              "host": ["{{base_url}}"],
+              "path": ["preguntas.php"]
+            },
+            "description": "Crea una nueva pregunta"
+          }
+        },
+        {
+          "name": "Actualizar Pregunta",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"texto\": \"¿Cuál es la raíz cuadrada de 169?\",\n  \"opciones\": [\"11\", \"12\", \"13\", \"14\"],\n  \"correcta\": 2\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/preguntas.php?id=1",
+              "host": ["{{base_url}}"],
+              "path": ["preguntas.php"],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Actualiza una pregunta existente"
+          }
+        },
+        {
+          "name": "Eliminar Pregunta",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/preguntas.php?id=5",
+              "host": ["{{base_url}}"],
+              "path": ["preguntas.php"],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "5"
+                }
+              ]
+            },
+            "description": "Elimina una pregunta"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Resultados",
+      "item": [
+        {
+          "name": "Listar Resultados",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/resultados.php",
+              "host": ["{{base_url}}"],
+              "path": ["resultados.php"]
+            },
+            "description": "Obtiene todos los resultados"
+          }
+        },
+        {
+          "name": "Filtrar Resultados por Usuario",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/resultados.php?usuario_id=1",
+              "host": ["{{base_url}}"],
+              "path": ["resultados.php"],
+              "query": [
+                {
+                  "key": "usuario_id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Filtra resultados por ID de usuario"
+          }
+        },
+        {
+          "name": "Filtrar Resultados por Universidad",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/resultados.php?universidad_id=1",
+              "host": ["{{base_url}}"],
+              "path": ["resultados.php"],
+              "query": [
+                {
+                  "key": "universidad_id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Filtra resultados por ID de universidad"
+          }
+        },
+        {
+          "name": "Crear Resultado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuario_id\": 1,\n  \"universidad_id\": 1,\n  \"correctas\": 15,\n  \"incorrectas\": 5,\n  \"total\": 20,\n  \"tiempo\": \"8 min 45 seg\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/resultados.php",
+              "host": ["{{base_url}}"],
+              "path": ["resultados.php"]
+            },
+            "description": "Guarda un nuevo resultado de simulador"
+          }
+        },
+        {
+          "name": "Eliminar Resultado",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/resultados.php?id=1",
+              "host": ["{{base_url}}"],
+              "path": ["resultados.php"],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Elimina un resultado"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost/ProyectoJustin/api/endpoints",
+      "type": "string"
+    }
+  ]
+}
