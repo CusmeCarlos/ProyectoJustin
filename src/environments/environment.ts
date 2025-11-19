@@ -1,16 +1,21 @@
-// This file can be replaced during build by using the `fileReplacements` array.
-// `ng build` replaces `environment.ts` with `environment.prod.ts`.
-// The list of file replacements can be found in `angular.json`.
+/**
+ * Configuración de environment para desarrollo
+ *
+ * Este archivo contiene las configuraciones para el entorno de desarrollo.
+ * Para producción, usa environment.prod.ts
+ */
 
 export const environment = {
-  production: false
-};
+  production: false,
 
-/*
- * For easier debugging in development mode, you can import the following file
- * to ignore zone related error stack frames such as `zone.run`, `zoneDelegate.invokeTask`.
- *
- * This import should be commented out in production mode because it will have a negative impact
- * on performance if an error is thrown.
- */
-// import 'zone.js/plugins/zone-error';  // Included with Angular CLI.
+  // URL base de la API REST
+  // Cambia esta URL según tu configuración de XAMPP
+  apiUrl: 'http://localhost/ProyectoJustin/api/endpoints',
+
+  // Configuraciones adicionales
+  apiTimeout: 30000, // 30 segundos
+
+  // Nombre de la aplicación
+  appName: 'Proyecto Justin',
+  appVersion: '1.0.0'
+};

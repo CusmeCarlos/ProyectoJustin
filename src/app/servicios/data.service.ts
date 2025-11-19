@@ -1,7 +1,12 @@
 import { Injectable } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError, BehaviorSubject, firstValueFrom } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { Universidad } from '../interface/universidad';
 import { Carrera } from '../interface/carrera';
 import { Resultado } from '../interface/resultado';
+import { ApiResponse } from '../interface/api-response';
+import { environment } from '../../environments/environment';
 
 // ==========================
 // INTERFACES
@@ -23,280 +28,463 @@ export interface Usuario {
 }
 
 // ==========================
-// SERVICIO PRINCIPAL
+// SERVICIO PRINCIPAL CON API REST
 // ==========================
 @Injectable({
   providedIn: 'root'
 })
 export class DataService {
 
-  constructor() {
-    this.crearAdminPorDefecto();
-    this.repararUniversidadesGuardadas(); // 👈 REPARA DATOS VACÍOS
+  private apiUrl = environment.apiUrl;
+  private usuarioActualSubject = new BehaviorSubject<Usuario | null>(null);
+  public usuarioActual$ = this.usuarioActualSubject.asObservable();
+
+  constructor(private http: HttpClient) {
+    // Cargar usuario actual desde localStorage al iniciar
+    const usuarioGuardado = localStorage.getItem('usuario_actual');
+    if (usuarioGuardado) {
+      this.usuarioActualSubject.next(JSON.parse(usuarioGuardado));
+    }
+  }
+
+  // ================================================
+  // ===============   MANEJO DE ERRORES   ===========
+  // ================================================
+  private handleError(error: HttpErrorResponse) {
+    let errorMessage = 'Ocurrió un error desconocido';
+
+    if (error.error instanceof ErrorEvent) {
+      // Error del lado del cliente
+      errorMessage = `Error: ${error.error.message}`;
+    } else {
+      // Error del lado del servidor
+      if (error.error && error.error.mensaje) {
+        errorMessage = error.error.mensaje;
+      } else {
+        errorMessage = `Código de error ${error.status}: ${error.message}`;
+      }
+    }
+
+    console.error('Error en la API:', errorMessage);
+    return throwError(() => new Error(errorMessage));
   }
 
   // ================================================
   // ===============   USUARIOS   ====================
   // ================================================
-  crearAdminPorDefecto() {
-    const lista = this.getUsuarios();
-    const admin = lista.find(u => u.rol === 'admin');
 
-    if (!admin) {
-      lista.push({
-        id: Date.now(),
-        nombre: 'Administrador',
-        email: 'admin@admin.com',
-        password: '123456',
-        rol: 'admin'
-      });
-      localStorage.setItem('usuarios', JSON.stringify(lista));
+  /**
+   * Login de usuario con la API
+   */
+  async login(email: string, password: string): Promise<Usuario | null> {
+    try {
+      const response = await firstValueFrom(
+        this.http.post<ApiResponse<Usuario>>(`${this.apiUrl}/login.php`, {
+          email,
+          password
+        }).pipe(catchError(this.handleError))
+      );
+
+      if (response.datos) {
+        const usuario = response.datos;
+        localStorage.setItem('usuario_actual', JSON.stringify(usuario));
+        this.usuarioActualSubject.next(usuario);
+        return usuario;
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Error en login:', error);
+      return null;
     }
   }
 
-  getUsuarios(): Usuario[] {
-    return JSON.parse(localStorage.getItem('usuarios') || '[]');
-  }
+  /**
+   * Registro de nuevo usuario
+   */
+  async registrarUsuario(u: Omit<Usuario, 'id' | 'rol'>): Promise<boolean> {
+    try {
+      const response = await firstValueFrom(
+        this.http.post<ApiResponse<Usuario>>(`${this.apiUrl}/register.php`, {
+          nombre: u.nombre,
+          email: u.email,
+          password: u.password
+        }).pipe(catchError(this.handleError))
+      );
 
-  registrarUsuario(u: Usuario): boolean {
-    const lista = this.getUsuarios();
-    if (lista.find(x => x.email === u.email)) return false;
-    lista.push(u);
-    localStorage.setItem('usuarios', JSON.stringify(lista));
-    return true;
-  }
-
-  login(email: string, password: string): Usuario | null {
-    const lista = this.getUsuarios();
-    const user = lista.find(u => u.email === email && u.password === password);
-
-    if (user) {
-      localStorage.setItem('usuario_actual', JSON.stringify(user));
-      return user;
+      return !!response.datos;
+    } catch (error) {
+      console.error('Error en registro:', error);
+      return false;
     }
-    return null;
   }
 
+  /**
+   * Obtener usuario actual desde localStorage
+   */
   getUsuarioActual(): Usuario | null {
-    return JSON.parse(localStorage.getItem('usuario_actual') || 'null');
+    return this.usuarioActualSubject.value;
   }
 
+  /**
+   * Logout del usuario
+   */
   logout() {
     localStorage.removeItem('usuario_actual');
+    this.usuarioActualSubject.next(null);
+  }
+
+  // Métodos legacy para compatibilidad (no implementados con API)
+  getUsuarios(): Usuario[] {
+    return [];
+  }
+
+  crearAdminPorDefecto() {
+    // El admin ya existe en la BD
   }
 
   // ================================================
   // ===============   UNIVERSIDADES   ===============
   // ================================================
-  getUniversidadesDefault(): Universidad[] {
-    return [
-      { id: 1, nombre: 'Universidad de Guayaquil', porcExamen: 60, porcGrado: 40, Tipodeprueba: ['razonamiento'], modalidad: 'Presencial' },
-      { id: 2, nombre: 'ESPOL', porcExamen: 50, porcGrado: 50, Tipodeprueba: ['razonamiento', 'conocimientos'], modalidad: 'Presencial' },
-      { id: 3, nombre: 'UCE', porcExamen: 65, porcGrado: 35, Tipodeprueba: ['generales', 'conocimientos'], modalidad: 'Virtual' },
-      { id: 4, nombre: 'UNEMI', porcExamen: 70, porcGrado: 30, Tipodeprueba: ['razonamiento', 'generales'], modalidad: 'Presencial' },
-    ];
+
+  /**
+   * Obtener todas las universidades desde la API
+   */
+  async getUniversidades(): Promise<Universidad[]> {
+    try {
+      const response = await firstValueFrom(
+        this.http.get<ApiResponse<Universidad[]>>(`${this.apiUrl}/universidades.php`)
+          .pipe(catchError(this.handleError))
+      );
+
+      return response.datos || [];
+    } catch (error) {
+      console.error('Error al obtener universidades:', error);
+      return [];
+    }
   }
 
-  getUniversidades(): Universidad[] {
-    const guardadas = localStorage.getItem('universidades');
-    return guardadas ? JSON.parse(guardadas) : this.getUniversidadesDefault();
+  /**
+   * Agregar nueva universidad
+   */
+  async agregarUniversidad(u: Omit<Universidad, 'id'>): Promise<Universidad | null> {
+    try {
+      const response = await firstValueFrom(
+        this.http.post<ApiResponse<Universidad>>(`${this.apiUrl}/universidades.php`, {
+          nombre: u.nombre,
+          porc_examen: u.porcExamen,
+          porc_grado: u.porcGrado,
+          modalidad: u.modalidad,
+          Tipodeprueba: u.Tipodeprueba
+        }).pipe(catchError(this.handleError))
+      );
+
+      return response.datos || null;
+    } catch (error) {
+      console.error('Error al agregar universidad:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Editar universidad existente
+   */
+  async editarUniversidad(u: Universidad): Promise<boolean> {
+    try {
+      const response = await firstValueFrom(
+        this.http.put<ApiResponse<Universidad>>(`${this.apiUrl}/universidades.php?id=${u.id}`, {
+          nombre: u.nombre,
+          porc_examen: u.porcExamen,
+          porc_grado: u.porcGrado,
+          modalidad: u.modalidad,
+          Tipodeprueba: u.Tipodeprueba
+        }).pipe(catchError(this.handleError))
+      );
+
+      return !!response.datos;
+    } catch (error) {
+      console.error('Error al editar universidad:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Eliminar universidad
+   */
+  async eliminarUniversidad(id: number): Promise<boolean> {
+    try {
+      await firstValueFrom(
+        this.http.delete<ApiResponse<any>>(`${this.apiUrl}/universidades.php?id=${id}`)
+          .pipe(catchError(this.handleError))
+      );
+
+      return true;
+    } catch (error) {
+      console.error('Error al eliminar universidad:', error);
+      return false;
+    }
+  }
+
+  // Métodos legacy para compatibilidad
+  getUniversidadesDefault(): Universidad[] {
+    return [];
   }
 
   guardarUniversidades(lista: Universidad[]) {
-    localStorage.setItem('universidades', JSON.stringify(lista));
+    // Ya no se usa localStorage
   }
 
-  agregarUniversidad(u: Universidad) {
-    const arr = this.getUniversidades();
-    arr.push(u);
-    this.guardarUniversidades(arr);
-  }
-
-  editarUniversidad(u: Universidad) {
-    const lista = this.getUniversidades();
-    const index = lista.findIndex(x => x.id === u.id);
-    if (index !== -1) {
-      lista[index] = u;
-      this.guardarUniversidades(lista);
-    }
-  }
-
-  eliminarUniversidad(id: number) {
-    let lista = this.getUniversidades();
-    lista = lista.filter(u => u.id !== id);
-    this.guardarUniversidades(lista);
-  }
-
-  // ========================================================
-  // 👇 FUNCIÓN NUEVA — REPARA UNIVERSIDADES CON CAMPOS VACÍOS
-  // ========================================================
   repararUniversidadesGuardadas() {
-    let lista = this.getUniversidades();
-    let cambios = false;
-
-    lista = lista.map(u => {
-      let cambio = false;
-
-      if (u.porcExamen === undefined || u.porcExamen === null) {
-        u.porcExamen = 50;
-        cambio = true;
-      }
-
-      if (u.porcGrado === undefined || u.porcGrado === null) {
-        u.porcGrado = 50;
-        cambio = true;
-      }
-
-      if (!u.Tipodeprueba) {
-        u.Tipodeprueba = [];
-        cambio = true;
-      }
-
-      if (!u.modalidad || u.modalidad === '') {
-        u.modalidad = 'Presencial';
-        cambio = true;
-      }
-
-      if (cambio) cambios = true;
-      return u;
-    });
-
-    if (cambios) {
-      this.guardarUniversidades(lista);
-      console.warn("✔ Universidades reparadas automáticamente");
-    }
+    // Ya no es necesario
   }
 
   // ================================================
   // ===============   CARRERAS   ====================
   // ================================================
-  getCarrerasDefault(): Carrera[] {
-    return [
-      { id: 1, uniId: 1, nombre: 'Ingeniería en Sistemas', modalidad: 'Presencial', matriz: 'Matriz Central' },
-      { id: 2, uniId: 1, nombre: 'Medicina', modalidad: 'Presencial', matriz: 'Matriz Sur' },
-      { id: 3, uniId: 2, nombre: 'Economía', modalidad: 'Online', matriz: 'Matriz Costa' },
-      { id: 4, uniId: 3, nombre: 'Diseño Gráfico', modalidad: 'Presencial', matriz: 'Matriz Norte' }
-    ];
-  }
 
-  getCarreras(): Carrera[] {
-    const guardadas = localStorage.getItem('carreras');
-    return guardadas ? JSON.parse(guardadas) : this.getCarrerasDefault();
-  }
+  /**
+   * Obtener todas las carreras desde la API
+   */
+  async getCarreras(): Promise<Carrera[]> {
+    try {
+      const response = await firstValueFrom(
+        this.http.get<ApiResponse<Carrera[]>>(`${this.apiUrl}/carreras.php`)
+          .pipe(catchError(this.handleError))
+      );
 
-  guardarCarreras(lista: Carrera[]) {
-    localStorage.setItem('carreras', JSON.stringify(lista));
-  }
-
-  agregarCarrera(c: Carrera) {
-    const arr = this.getCarreras();
-    arr.push(c);
-    this.guardarCarreras(arr);
-  }
-
-  editarCarrera(c: Carrera) {
-    const lista = this.getCarreras();
-    const index = lista.findIndex(x => x.id === c.id);
-    if (index !== -1) {
-      lista[index] = c;
-      this.guardarCarreras(lista);
+      return response.datos || [];
+    } catch (error) {
+      console.error('Error al obtener carreras:', error);
+      return [];
     }
   }
 
-  eliminarCarrera(id: number) {
-    let lista = this.getCarreras();
-    lista = lista.filter(c => c.id !== id);
-    this.guardarCarreras(lista);
+  /**
+   * Agregar nueva carrera
+   */
+  async agregarCarrera(c: Omit<Carrera, 'id'>): Promise<Carrera | null> {
+    try {
+      const response = await firstValueFrom(
+        this.http.post<ApiResponse<Carrera>>(`${this.apiUrl}/carreras.php`, {
+          nombre: c.nombre,
+          universidad_id: c.uniId,
+          modalidad: c.modalidad,
+          matriz: c.matriz
+        }).pipe(catchError(this.handleError))
+      );
+
+      return response.datos || null;
+    } catch (error) {
+      console.error('Error al agregar carrera:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Editar carrera existente
+   */
+  async editarCarrera(c: Carrera): Promise<boolean> {
+    try {
+      const response = await firstValueFrom(
+        this.http.put<ApiResponse<Carrera>>(`${this.apiUrl}/carreras.php?id=${c.id}`, {
+          nombre: c.nombre,
+          universidad_id: c.uniId,
+          modalidad: c.modalidad,
+          matriz: c.matriz
+        }).pipe(catchError(this.handleError))
+      );
+
+      return !!response.datos;
+    } catch (error) {
+      console.error('Error al editar carrera:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Eliminar carrera
+   */
+  async eliminarCarrera(id: number): Promise<boolean> {
+    try {
+      await firstValueFrom(
+        this.http.delete<ApiResponse<any>>(`${this.apiUrl}/carreras.php?id=${id}`)
+          .pipe(catchError(this.handleError))
+      );
+
+      return true;
+    } catch (error) {
+      console.error('Error al eliminar carrera:', error);
+      return false;
+    }
+  }
+
+  // Métodos legacy para compatibilidad
+  getCarrerasDefault(): Carrera[] {
+    return [];
+  }
+
+  guardarCarreras(lista: Carrera[]) {
+    // Ya no se usa localStorage
   }
 
   // ================================================
   // ===============   PREGUNTAS   ===================
   // ================================================
-  preguntasPorUniversidadBase: { [key: number]: Pregunta[] } = {
-    1: [
-      {
-        id: 1,
-        texto: '¿Cuánto es 2 + 2?',
-        opciones: ['1', '2', '3', '4'],
-        correcta: 3,
-        area: 'razonamiento'
+
+  /**
+   * Obtener preguntas filtradas por área (opcional)
+   */
+  async getPreguntasByUniversidad(uniId?: number, area?: string): Promise<Pregunta[]> {
+    try {
+      let url = `${this.apiUrl}/preguntas.php`;
+
+      // Si se especifica un área, filtrar por ella
+      if (area) {
+        url += `?area=${area}`;
       }
-    ],
-    2: [
-      {
-        id: 2,
-        texto: 'El sol es:',
-        opciones: ['Un planeta', 'Una estrella', 'Un satélite', 'Un cometa'],
-        correcta: 1,
-        area: 'conocimientos'
-      }
-    ],
-    3: [],
-    4: []
-  };
 
-  getPreguntasByUniversidad(uniId: number): Pregunta[] {
-    const guardadas = localStorage.getItem('preguntas_' + uniId);
-    return guardadas ? JSON.parse(guardadas) : this.preguntasPorUniversidadBase[uniId] || [];
-  }
+      const response = await firstValueFrom(
+        this.http.get<ApiResponse<Pregunta[]>>(url)
+          .pipe(catchError(this.handleError))
+      );
 
-  guardarPreguntas(uniId: number, lista: Pregunta[]) {
-    localStorage.setItem('preguntas_' + uniId, JSON.stringify(lista));
-  }
-
-  agregarPregunta(uniId: number, p: Pregunta) {
-    const arr = this.getPreguntasByUniversidad(uniId);
-    arr.push(p);
-    this.guardarPreguntas(uniId, arr);
-  }
-
-  importarPreguntasExcel(uniId: number, preguntasExcel: Pregunta[]) {
-    const arr = this.getPreguntasByUniversidad(uniId);
-
-    preguntasExcel.forEach(p => {
-      arr.push({
-        id: p.id ?? Date.now(),
-        texto: p.texto,
-        opciones: p.opciones,
-        correcta: p.correcta,
-        area: p.area
-      });
-    });
-
-    this.guardarPreguntas(uniId, arr);
-  }
-
-  editarPregunta(uniId: number, p: Pregunta) {
-    const lista = this.getPreguntasByUniversidad(uniId);
-    const index = lista.findIndex(x => x.id === p.id);
-    if (index !== -1) {
-      lista[index] = p;
-      this.guardarPreguntas(uniId, lista);
+      return response.datos || [];
+    } catch (error) {
+      console.error('Error al obtener preguntas:', error);
+      return [];
     }
   }
 
-  eliminarPregunta(uniId: number, id: number) {
-    let lista = this.getPreguntasByUniversidad(uniId);
-    lista = lista.filter(p => p.id !== id);
-    this.guardarPreguntas(uniId, lista);
+  /**
+   * Agregar nueva pregunta
+   */
+  async agregarPregunta(uniId: number, p: Omit<Pregunta, 'id'>): Promise<Pregunta | null> {
+    try {
+      const response = await firstValueFrom(
+        this.http.post<ApiResponse<Pregunta>>(`${this.apiUrl}/preguntas.php`, {
+          texto: p.texto,
+          opciones: p.opciones,
+          correcta: p.correcta,
+          area: p.area
+        }).pipe(catchError(this.handleError))
+      );
+
+      return response.datos || null;
+    } catch (error) {
+      console.error('Error al agregar pregunta:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Importar preguntas desde Excel
+   */
+  async importarPreguntasExcel(uniId: number, preguntasExcel: Pregunta[]): Promise<boolean> {
+    try {
+      // Importar cada pregunta individualmente
+      for (const pregunta of preguntasExcel) {
+        await this.agregarPregunta(uniId, pregunta);
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error al importar preguntas:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Editar pregunta existente
+   */
+  async editarPregunta(uniId: number, p: Pregunta): Promise<boolean> {
+    try {
+      const response = await firstValueFrom(
+        this.http.put<ApiResponse<Pregunta>>(`${this.apiUrl}/preguntas.php?id=${p.id}`, {
+          texto: p.texto,
+          opciones: p.opciones,
+          correcta: p.correcta,
+          area: p.area
+        }).pipe(catchError(this.handleError))
+      );
+
+      return !!response.datos;
+    } catch (error) {
+      console.error('Error al editar pregunta:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Eliminar pregunta
+   */
+  async eliminarPregunta(uniId: number, id: number): Promise<boolean> {
+    try {
+      await firstValueFrom(
+        this.http.delete<ApiResponse<any>>(`${this.apiUrl}/preguntas.php?id=${id}`)
+          .pipe(catchError(this.handleError))
+      );
+
+      return true;
+    } catch (error) {
+      console.error('Error al eliminar pregunta:', error);
+      return false;
+    }
+  }
+
+  // Métodos legacy para compatibilidad
+  preguntasPorUniversidadBase: { [key: number]: Pregunta[] } = {};
+
+  guardarPreguntas(uniId: number, lista: Pregunta[]) {
+    // Ya no se usa localStorage
   }
 
   // ================================================
   // ===============   HISTORIAL   ===================
   // ================================================
-  guardarIntento(uniId: number, datos: Resultado) {
-    const key = `simulador_${uniId}`;
-    const historial = JSON.parse(localStorage.getItem(key) || '[]');
 
-    historial.push({
-      ...datos,
-      fecha: new Date().toLocaleString()
-    });
+  /**
+   * Guardar intento de simulador
+   */
+  async guardarIntento(uniId: number, datos: Resultado): Promise<boolean> {
+    try {
+      const usuario = this.getUsuarioActual();
+      if (!usuario) {
+        console.error('No hay usuario autenticado');
+        return false;
+      }
 
-    localStorage.setItem(key, JSON.stringify(historial));
+      const response = await firstValueFrom(
+        this.http.post<ApiResponse<any>>(`${this.apiUrl}/resultados.php`, {
+          usuario_id: usuario.id,
+          universidad_id: uniId,
+          correctas: datos.correctas,
+          incorrectas: datos.incorrectas,
+          total: datos.total,
+          tiempo: datos.tiempo
+        }).pipe(catchError(this.handleError))
+      );
+
+      return !!response.datos;
+    } catch (error) {
+      console.error('Error al guardar intento:', error);
+      return false;
+    }
   }
 
-  obtenerHistorial(uniId: number) {
-    return JSON.parse(localStorage.getItem(`simulador_${uniId}`) || '[]');
+  /**
+   * Obtener historial de intentos por universidad
+   */
+  async obtenerHistorial(uniId: number): Promise<any[]> {
+    try {
+      const response = await firstValueFrom(
+        this.http.get<ApiResponse<any[]>>(`${this.apiUrl}/resultados.php?universidad_id=${uniId}`)
+          .pipe(catchError(this.handleError))
+      );
+
+      return response.datos || [];
+    } catch (error) {
+      console.error('Error al obtener historial:', error);
+      return [];
+    }
   }
 }
